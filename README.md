@@ -1,4 +1,4 @@
-
+first you need to set postgres container: docker compose up --build
 Base URL
 All endpoints are prefixed with /api/auth for authentication services or /example for role testing.
 
