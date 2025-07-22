@@ -2,13 +2,9 @@ package me.project.authorization_service.controller;
 
 import lombok.RequiredArgsConstructor;
 import me.project.authorization_service.dto.*;
-import me.project.authorization_service.model.Role;
 import me.project.authorization_service.service.ClientServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

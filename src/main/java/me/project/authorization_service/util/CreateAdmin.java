@@ -23,7 +23,7 @@ public class CreateAdmin implements ApplicationRunner {
             clientService.registerPremiumUser(new SignUpRequest("premium", "premium", "premium@premium.com"));
 
         } catch (UserAlreadyExistsException e) {
-            System.out.println(e.getMessage());
+            System.out.println("users already exist");
         }
         }
 }
