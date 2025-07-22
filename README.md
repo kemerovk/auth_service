@@ -1,5 +1,3 @@
-Overview
-This service provides authentication and authorization functionality with role-based access control. It includes endpoints for user registration, login, token management, and role-based example endpoints.
 
 Base URL
 All endpoints are prefixed with /api/auth for authentication services or /example for role testing.
