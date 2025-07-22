@@ -1,6 +1,7 @@
 package me.project.authorization_service.service;
 
 import lombok.RequiredArgsConstructor;
+import me.project.authorization_service.exception.UserNotFoundException;
 import me.project.authorization_service.repository.ClientRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,7 +16,7 @@ public class MyUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return clientRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
     }
 
 }

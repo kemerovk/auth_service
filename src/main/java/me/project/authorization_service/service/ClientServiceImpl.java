@@ -1,21 +1,19 @@
 package me.project.authorization_service.service;
 
 import lombok.RequiredArgsConstructor;
-import me.project.authorization_service.dto.Jwt;
-import me.project.authorization_service.dto.LoginRequest;
-import me.project.authorization_service.dto.SignUpRequest;
-import me.project.authorization_service.dto.SignUpResponse;
+import me.project.authorization_service.dto.*;
+import me.project.authorization_service.exception.UserAlreadyExistsException;
 import me.project.authorization_service.model.Client;
 import me.project.authorization_service.model.Role;
 import me.project.authorization_service.repository.ClientRepository;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 
 @Service
@@ -28,46 +26,69 @@ public class ClientServiceImpl implements ClientService {
     private final TokenService tokenService;
     private final UserDetailsService userDetailsService;
 
+    public Jwt registerClient(SignUpRequest signUpRequest) {
+        return register(signUpRequest, Role.GUEST);
+    }
 
-    @Override
-    public Jwt registerClient(SignUpRequest signUpRequest){
-        if (clientRepository.existsByUsername(signUpRequest.username())){
-            throw new RuntimeException("User already exists");
-        }
-        else if (clientRepository.existsByEmail(signUpRequest.email())){
-            throw new RuntimeException("User with email " + signUpRequest.email() + " already exists");
-        }
+    public Jwt registerPremiumUser(SignUpRequest signUpRequest) {
+        return register(signUpRequest, Role.PREMIUM_USER);
+    }
 
+    public Jwt registerAdmin(SignUpRequest signUpRequest) {
+        return register(signUpRequest, Role.ADMIN);
+    }
+
+    public boolean changePassword(ChangePasswordRequest request) {
+        Optional<Client> clientFromDb = clientRepository.findByUsername(request.username());
+        if (clientFromDb.isPresent()) {
+            Client client = clientFromDb.get();
+            client.setPassword(passwordEncoder.encode(request.newPassword()));
+            clientRepository.save(client);
+            return true;
+        }
+        return false;
+    }
+
+    public Jwt register(SignUpRequest signUpRequest, Role role) {
+        if (clientRepository.existsByUsername(signUpRequest.username()) ||
+                clientRepository.existsByEmail(signUpRequest.email())) {
+            throw new UserAlreadyExistsException("User already exists");
+        }
         Client client = new Client();
         client.setUsername(signUpRequest.username());
         client.setPassword(passwordEncoder.encode(signUpRequest.password()));
         client.setEmail(signUpRequest.email());
-        client.setRole(Role.GUEST);
-        System.out.println(Role.GUEST);
+        client.setRole(role);
 
         clientRepository.save(client);
         return tokenService.createToken(client);
 
     }
 
-
-    public Jwt login(LoginRequest loginRequest){
-        try {
-            authenticationManager.authenticate
-                    (new UsernamePasswordAuthenticationToken
-                            (loginRequest.username(), loginRequest.password())
-                    );
-
+    public boolean changeRole(ChangeRoleRequest request) {
+        Optional<Client> client = clientRepository.findByUsername(request.username());
+        if (client.isPresent()) {
+            Client toChange = client.get();
+            toChange.setRole(request.role());
+            clientRepository.save(toChange);
+            return true;
         }
-        catch (BadCredentialsException e) {
-            throw new RuntimeException("Bad credentials");
-        }
+        return false;
+    }
+
+    public Jwt login(LoginRequest loginRequest) {
+        authenticationManager.authenticate
+                (
+                        new UsernamePasswordAuthenticationToken
+                                (loginRequest.username(), loginRequest.password())
+                );
+
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.username());
         return tokenService.createToken((Client) userDetails);
     }
 
-    public Jwt refreshToken(Jwt jwt){
+    public Jwt refreshToken(Jwt jwt) {
         return tokenService.refreshToken(jwt);
     }
 

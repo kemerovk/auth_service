@@ -1,11 +1,11 @@
 package me.project.authorization_service.controller;
 
 import lombok.RequiredArgsConstructor;
-import me.project.authorization_service.dto.Jwt;
-import me.project.authorization_service.dto.LoginRequest;
-import me.project.authorization_service.dto.SignUpRequest;
+import me.project.authorization_service.dto.*;
+import me.project.authorization_service.model.Role;
 import me.project.authorization_service.service.ClientServiceImpl;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,14 +17,13 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final ClientServiceImpl clientService;
-    private final AuthenticationManager authenticationManager;
 
-    @PostMapping("register")
+    @PutMapping("register")
     public ResponseEntity<?> registerUser(@RequestBody SignUpRequest signUpRequest){
         return ResponseEntity.ok(clientService.registerClient(signUpRequest));
     }
 
-    @PostMapping("/login")
+    @PostMapping("login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(clientService.login(request));
     }
@@ -36,6 +35,18 @@ public class AuthController {
 
     @PostMapping("logout")
     public ResponseEntity<?> logout(Jwt jwt){
-        return  ResponseEntity.ok(clientService.logout(jwt));
+        return ResponseEntity.ok(clientService.logout(jwt));
+    }
+
+    @PatchMapping("change_password")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest){
+        return ResponseEntity.ok(clientService.changePassword(changePasswordRequest));
+    }
+
+    @PatchMapping("change_role")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<?> changeRole(@RequestBody ChangeRoleRequest roleRequest){
+        return ResponseEntity.ok(clientService.changeRole(roleRequest));
     }
 }
