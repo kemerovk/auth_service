@@ -4,7 +4,6 @@ import me.project.authorization_service.dto.ChangeRoleRequest;
 import me.project.authorization_service.dto.Jwt;
 import me.project.authorization_service.dto.LoginRequest;
 import me.project.authorization_service.dto.SignUpRequest;
-import me.project.authorization_service.model.Client;
 import me.project.authorization_service.model.Role;
 
 public interface ClientService {

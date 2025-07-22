@@ -65,10 +65,14 @@ public class ClientServiceImpl implements ClientService {
 
     }
 
+
     public boolean changeRole(ChangeRoleRequest request) {
         Optional<Client> client = clientRepository.findByUsername(request.username());
         if (client.isPresent()) {
             Client toChange = client.get();
+            if (request.role().equals(Role.ADMIN)) {
+                return false;
+            }
             toChange.setRole(request.role());
             clientRepository.save(toChange);
             return true;

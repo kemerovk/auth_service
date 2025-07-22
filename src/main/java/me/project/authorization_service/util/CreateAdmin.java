@@ -2,6 +2,7 @@ package me.project.authorization_service.util;
 
 import lombok.RequiredArgsConstructor;
 import me.project.authorization_service.dto.SignUpRequest;
+import me.project.authorization_service.exception.UserAlreadyExistsException;
 import me.project.authorization_service.service.ClientService;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -17,7 +18,12 @@ public class CreateAdmin implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        clientService.registerAdmin(new SignUpRequest("admin", "admin", "admin@admin.com"));
-        clientService.registerPremiumUser(new SignUpRequest("premium", "premium", "premium@premium.com"));
-    }
+        try {
+            clientService.registerAdmin(new SignUpRequest("admin", "admin", "admin@admin.com"));
+            clientService.registerPremiumUser(new SignUpRequest("premium", "premium", "premium@premium.com"));
+
+        } catch (UserAlreadyExistsException e) {
+            System.out.println(e.getMessage());
+        }
+        }
 }

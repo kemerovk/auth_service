@@ -11,19 +11,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class ExampleRolesController {
 
     @GetMapping("base-info")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PREMIUM_USER', 'GUEST')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_PREMIUM_USER', 'ROLE_GUEST')")
     public String getInfoForAll() {
         return "Everybody can see it";
     }
 
     @GetMapping("not-guest")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PREMIUM_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_PREMIUM_USER')")
     public String getInfoForNotGuest() {
         return "Admins and premium users can see it";
     }
 
     @GetMapping("admin-only")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public String getInfoForAdminOnly() {
         return "Only admins can see it";
     }
