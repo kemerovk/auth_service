@@ -54,10 +54,10 @@ jobs:
 
       - name: Deploy to server
         run: |
-          scp -P ${{ secrets.PORT }} -o StrictHostKeyChecking=no *.jar ${{ secrets.USER }}@${{ secrets.HOST }}:/opt/myapp/app.jar
-          ssh -p ${{ secrets.PORT }} -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} '
-            sudo systemctl stop myapp.service || true
-            sudo systemctl start myapp.service
+          ssh -p ${{ secrets.PORT }} -o StrictHostKeyChecking=no root@${{ secrets.HOST }} 'mkdir -p /opt/myapp'
+          scp -P ${{ secrets.PORT }} -o StrictHostKeyChecking=no *.jar root@${{ secrets.HOST }}:/opt/myapp/app.jar
+          ssh -p ${{ secrets.PORT }} -o StrictHostKeyChecking=no root@${{ secrets.HOST }} '
+            systemctl restart myapp.service
           '
 
       - name: Notify on success
