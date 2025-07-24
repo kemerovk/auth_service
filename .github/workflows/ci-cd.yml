@@ -54,8 +54,10 @@ jobs:
 
       - name: Deploy to server
         run: |
-          # Загрузи docker-compose файл и jar файл
-          scp -P ${{ secrets.PORT }} -o StrictHostKeyChecking=no docker-compose.yaml root@${{ secrets.HOST }}:/opt/myapp/
+          # Распакуй скачанный артефакт (он содержит jar и docker-compose файлы)
+          ls -la
+
+          # Загрузи docker-compose файл и jar файл на сервер
           scp -P ${{ secrets.PORT }} -o StrictHostKeyChecking=no *.jar root@${{ secrets.HOST }}:/opt/myapp/
 
           # На сервере останови, обнови и запусти контейнеры
