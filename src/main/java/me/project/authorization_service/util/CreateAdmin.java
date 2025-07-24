@@ -6,7 +6,6 @@ import me.project.authorization_service.exception.UserAlreadyExistsException;
 import me.project.authorization_service.service.ClientService;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -54,10 +54,15 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh -p ${{ secrets.PORT }} -o StrictHostKeyChecking=no root@${{ secrets.HOST }} 'mkdir -p /opt/myapp'
-          scp -P ${{ secrets.PORT }} -o StrictHostKeyChecking=no *.jar root@${{ secrets.HOST }}:/opt/myapp/app.jar
+          # Загрузи docker-compose файл и jar файл
+          scp -P ${{ secrets.PORT }} -o StrictHostKeyChecking=no docker-compose.yml root@${{ secrets.HOST }}:/opt/myapp/
+          scp -P ${{ secrets.PORT }} -o StrictHostKeyChecking=no *.jar root@${{ secrets.HOST }}:/opt/myapp/
+
+          # На сервере останови, обнови и запусти контейнеры
           ssh -p ${{ secrets.PORT }} -o StrictHostKeyChecking=no root@${{ secrets.HOST }} '
-            systemctl restart myapp.service
+            cd /opt/myapp
+            docker-compose down
+            docker-compose up -d
           '
 
       - name: Notify on success
