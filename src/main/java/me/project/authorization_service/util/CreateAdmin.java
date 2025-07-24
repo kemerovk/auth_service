@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CreateAdmin implements ApplicationRunner {
     private final ClientService clientService;
-    private final PasswordEncoder passwordEncoder;
 
 
     @Override
