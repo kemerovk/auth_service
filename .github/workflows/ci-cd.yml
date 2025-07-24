@@ -45,33 +45,57 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: app-files  # ✅ Исправлено: правильное имя артефакта
+          name: app-files
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
+      - name: Debug - Check downloaded files
+        run: |
+            echo "=== Current directory ==="
+            pwd
+            echo "=== All files ==="
+            ls -la
+            echo "=== Looking for jar files ==="
+            find . -name "*.jar" -type f
+            echo "=== Looking for all files ==="
+            find . -type f
+
       - name: Deploy to server
         run: |
-          # Создай директорию на сервере, если её нет
+          # Отладка - покажи, что есть в директории
+          echo "Files in current directory:"
+          ls -la
+
+          # Проверь, есть ли docker-compose файл
+          if [ ! -f "docker-compose.yaml" ]; then
+            echo "ERROR: docker-compose.yaml not found!"
+            exit 1
+          fi
+
+          # Найди jar файл
+          JAR_FILE=$(find . -name "*.jar" -type f | head -n 1)
+          if [ -z "$JAR_FILE" ]; then
+            echo "ERROR: No jar file found!"
+            exit 1
+          fi
+
+          echo "Found jar file: $JAR_FILE"
+
+          # Создай директорию на сервере
           ssh -p ${{ secrets.PORT }} -o StrictHostKeyChecking=no root@${{ secrets.HOST }} 'mkdir -p /opt/myapp'
-          
-          # Скопируй docker-compose файл и jar файл из артефакта
+
+          # Скопируй файлы на сервер
           scp -P ${{ secrets.PORT }} -o StrictHostKeyChecking=no docker-compose.yaml root@${{ secrets.HOST }}:/opt/myapp/
-          scp -P ${{ secrets.PORT }} -o StrictHostKeyChecking=no *.jar root@${{ secrets.HOST }}:/opt/myapp/app.jar
-          
+          scp -P ${{ secrets.PORT }} -o StrictHostKeyChecking=no "$JAR_FILE" root@${{ secrets.HOST }}:/opt/myapp/app.jar
+
           # На сервере запусти контейнеры
           ssh -p ${{ secrets.PORT }} -o StrictHostKeyChecking=no root@${{ secrets.HOST }} '
             cd /opt/myapp
-            if [ -f "docker-compose.yaml" ]; then
-              echo "Starting application with Docker Compose"
-              docker-compose down
-              docker-compose up -d
-            else
-              echo "No docker-compose file found"
-              exit 1
-            fi
+            docker-compose down
+            docker-compose up -d
           '
 
       - name: Notify on success
