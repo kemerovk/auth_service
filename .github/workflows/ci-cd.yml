@@ -14,7 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -33,7 +32,6 @@ jobs:
         with:
           name: app-jar
           path: target/*.jar
-
 
   # === CD: Деплой на сервер (только для main ветки) ===
   deploy:
@@ -54,17 +52,24 @@ jobs:
 
       - name: Deploy to server
         run: |
-          # Распакуй скачанный артефакт (он содержит jar и docker-compose файлы)
-          ls -la
-
-          # Загрузи docker-compose файл и jar файл на сервер
-          scp -P ${{ secrets.PORT }} -o StrictHostKeyChecking=no *.jar root@${{ secrets.HOST }}:/opt/myapp/
-
-          # На сервере останови, обнови и запусти контейнеры
+        
+          # Скопируй docker-compose файл отдельно из репозитория
+          scp -P ${{ secrets.PORT }} -o StrictHostKeyChecking=no docker-compose.yaml root@${{ secrets.HOST }}:/opt/myapp/
+          
+          # Скопируй jar файл из артефакта
+          scp -P ${{ secrets.PORT }} -o StrictHostKeyChecking=no *.jar root@${{ secrets.HOST }}:/opt/myapp/app.jar
+          
+          # На сервере запусти контейнеры
           ssh -p ${{ secrets.PORT }} -o StrictHostKeyChecking=no root@${{ secrets.HOST }} '
             cd /opt/myapp
-            docker-compose down
-            docker-compose up -d
+            if [ -f "docker-compose.yaml" ]; then
+              echo "Starting application with Docker Compose"
+              docker-compose down
+              docker-compose up -d
+            else
+              echo "No docker-compose file found"
+              exit 1
+            fi
           '
 
       - name: Notify on success
